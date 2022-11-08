@@ -117,7 +117,8 @@ ansible/ansible_volumes/vault_process/
         └── my-local-node.yml
 ```
 - Modification of vault.yml and my-docker-host.yml files
-  - **vault.yml** file
+  
+-> **vault.yml** file
 
 ```sh
 # ansible/ansible_volumes/vault_process/inventory/group_vars/all/vault.yml
@@ -125,8 +126,7 @@ ansible/ansible_volumes/vault_process/
 vault_docker_pass: "<docker host password>"
 vault_docker_user: "<docker host user>"
 ```
-
-   - **my-docker-host.yml** file
+-> **my-docker-host.yml** file
 
 ```sh
 # ansible/ansible_volumes/vault_process/inventory/host_vars/my-docker-host.yml
