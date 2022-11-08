@@ -9,6 +9,12 @@
 docker build -t ansible-controller ansible/ansible_controller/
 ```
 ### Check if the controller is working
+Structure of the directory shared while running the container :
+```sh
+# Structure of the targeted directory
+ansible/ansible_volumes/init_volume/
+└── init-playbook.yml
+```
 First, let explain the commands:
 - **docker run** : basic command to run the container
 - **--rm** : it will delete the container after completing the command
@@ -27,6 +33,19 @@ ansible-playbook -i "my-local-node," --connection=local init-playbook.yml
 ```
 ### Interact with the Docker host
 The following steps will permit us to interact with the docker host where the ansible-controller container is running.
+
+Structure of the directory shared while running the container :
+```sh
+# Structure of the targeted directory
+ansible/ansible_volumes/host_interaction/
+├── ansible.cfg
+├── host-int-playbook.yml
+└── inventory
+    ├── 00_inventory.yml
+    └── host_vars
+        ├── my-docker-host.yml
+        └── my-local-node.yml
+```
 
 #### What changes compare to an ansible controller set up on a VM ?
 For the moment, 2 ocurring errors were found :
@@ -61,8 +80,11 @@ In the playbook, we changed one of the tasks:
 Instead of giving us the distribution, it will display the list of files from the /ansible_files drectory for the container and from your home directory for your docker host.
 ```sh
 # In path/to/the/repo/
-docker-for-projects]$ docker run --rm -v $(pwd)/ansible/ansible_volumes/host_interaction:/ansible_files ansible-con
-troller ansible-playbook host-int-playbook.yml
+docker run \
+--rm \
+-v $(pwd)/ansible/ansible_volumes/host_interaction:/ansible_files \
+ansible-controller \
+ansible-playbook host-int-playbook.yml
 # The ouput should look like that
 TASK [Display the linux distribution] ******************************************
 ok: [my-local-node] => {
