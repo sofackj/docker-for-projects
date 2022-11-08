@@ -1,0 +1,3 @@
+---
+my_var: "my-local-node"
+ansible_connection: local
