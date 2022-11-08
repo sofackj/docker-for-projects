@@ -94,6 +94,81 @@ ok: [my-docker-host] => {
     "msg": "docker-for-projects\n<...>"
 }
 ```
+### Hide your secrets with Ansible-Vault
+In this part , we will go through the following steps:
+- Put our sensitive variables in the vault.yml file
+- Encrypt the vault file via the container
+- Launch the playbook using the option --vault-password-file
+
+#### Structure of the sharing volume
+- Global structure of the volume
+```sh
+ansible/ansible_volumes/vault_process/
+├── ansible.cfg
+├── host-int-playbook.yml
+└── inventory
+    ├── 00_inventory.yml
+    ├── group_vars
+    │   └── all
+    │       ├── variables.yml
+    │       └── vault.yml
+    └── host_vars
+        ├── my-docker-host.yml
+        └── my-local-node.yml
+```
+- Modification of vault.yml and my-docker-host.yml files
+    - **vault.yml** file
+```sh
+# ansible/ansible_volumes/vault_process/inventory/group_vars/all/vault.yml
+---
+vault_docker_pass: "<docker host password>"
+vault_docker_user: "<docker host user>"
+```
+    - **my-docker-host.yml** file
+```sh
+# ansible/ansible_volumes/vault_process/inventory/host_vars/my-docker-host.yml
+---
+my_var: "my-docker-host"
+ansible_host: <IP of the docker host>
+ansible_connection: ssh
+ansible_user: "{{ vault_docker_user }}"
+ansible_password: "{{ vault_docker_pass }}"
+ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+```
+
+#### Simple way
+- Setup the password in a secure way
+First you will create a directory with your file and a password in it at your home location
+```sh
+# Create the directory
+mkdir ~/.my_secrets
+# Create the password file
+cat > ~/.my_secrets/my-vault
+# Input : Put yur password
+<my-password>
+```
+- Encryption of the vault.yml file containing the sensitive informations
+ First, we will go through an explanation about this command :
+    - **-v ~/.my_secrets:/secrets** : Volume sharing creating a /secrets directory in the container
+    - **ansible-vault encrypt --vault-id /secrets/my-vault inventory/group_vars/all/vault.yml** : Encrypt a file using a file as password storage (for more explanation about ansible-vault, check [here](https://docs.ansible.com/ansible/latest/user_guide/vault.html))
+```sh
+# In path/to/the/repo/
+docker run \
+--rm \
+-v ~/.my_secrets:/secrets \
+-v $(pwd)/ansible/ansible_volumes/vault_process:/ansible_files ansible-controller \
+ansible-vault encrypt --vault-id /secrets/my-vault inventory/group_vars/all/vault.yml
+```
+- Start the playbook with the vault.yml file encrypted
+```sh
+# In path/to/the/repo/
+docker run \
+--rm \
+-v ~/.my_secrets:/secrets \
+-v $(pwd)/ansible/ansible_volumes/vault_process:/ansible_files ansible-controller \
+ansible-playbook host-int-playbook.yml --vault-password-file /secrets/my-vault
+```
+We will see later that we could use an other way passing by jenkins.
 
 ## Docker with Jenkins
 
