@@ -1,0 +1,5 @@
+all:
+  hosts:
+    my-local-node:
+    my-docker-host:
+    
