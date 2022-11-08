@@ -2,6 +2,6 @@
 my_var: "my-docker-host"
 ansible_host: 192.168.43.208
 ansible_connection: ssh
-ansible_user: devops
-ansible_password: devops
+ansible_user: "{{ vault_docker_user }}"
+ansible_password: "{{ vault_docker_pass }}"
 ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
