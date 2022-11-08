@@ -1,9 +1,8 @@
----
 - hosts: all
   gather_facts: False
   tasks:
     - name: Catch the linux distribution of the host
-      shell: cat /etc/*release*
+      shell: ls
       register: MY_DISTRIB
 
     - name: Display the linux distribution
@@ -13,4 +12,3 @@
     - name: Check the debug message
       debug:
         msg: "Hi! Ansible is working"
- 
