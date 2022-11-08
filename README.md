@@ -85,6 +85,8 @@ docker run \
 -v $(pwd)/ansible/ansible_volumes/host_interaction:/ansible_files \
 ansible-controller \
 ansible-playbook host-int-playbook.yml
+```
+```sh
 # The ouput should look like that
 TASK [Display the linux distribution] ******************************************
 ok: [my-local-node] => {
