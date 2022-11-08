@@ -46,6 +46,7 @@ ansible/ansible_volumes/host_interaction/
         ├── my-docker-host.yml
         └── my-local-node.yml
 ```
+Concerning the ansible.cfg file, there is a very interesting webpage [here](https://www.golinuxcloud.com/ansible-cfg/) on the basis of its content.
 
 #### What changes compare to an ansible controller set up on a VM ?
 For the moment, 2 ocurring errors were found :
@@ -174,6 +175,49 @@ docker run \
 ansible-playbook vault-playbook.yml --vault-password-file /secrets/my-vault
 ```
 We will see later that we could use an other way passing by jenkins.
+
+### Deploy ssh keys from the Ansible container
+As the container is deleted afetr ech use, I don't know if it's very useful. However, I will explain how it could be done.
+
+#### Structure of the shared volume
+- Global structure of the volume
+```sh
+ansible/ansible_volumes/ssh_key_generate/
+├── ansible.cfg
+├── inventory
+│   ├── 00_inventory.yml
+│   └── host_vars
+│       ├── my-docker-host.yml
+│       └── my-local-node.yml
+└── ssh-playbook.yml
+```
+- Modifications on the host_vars directory
+Do the same than we did previously.
+
+#### Command to launch the playbook
+```sh
+# In path/to/the/repo/
+docker run \
+--rm \
+-v $(pwd)/ansible/ansible_volumes/ssh_key_generate:/ansible_files \
+ansible-controller ansible-playbook ssh-playbook.yml
+```
+The output should look like this:
+```sh
+PLAY [all] *********************************************************************
+
+TASK [Create the .ssh directory in the container] ******************************
+changed: [my-local-node -> 127.0.0.1]
+
+TASK [generate SSH key] ********************************************************
+changed: [my-local-node -> 127.0.0.1]
+
+TASK [Deploy public key] *******************************************************
+changed: [my-local-node -> my-docker-host(<docker host IP>)]
+
+PLAY RECAP *********************************************************************
+my-local-node              : ok=3    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
 
 ## Docker with Jenkins
 
