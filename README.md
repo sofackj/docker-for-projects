@@ -171,7 +171,7 @@ docker run \
 --rm \
 -v ~/.my_secrets:/secrets \
 -v $(pwd)/ansible/ansible_volumes/vault_process:/ansible_files ansible-controller \
-ansible-playbook host-int-playbook.yml --vault-password-file /secrets/my-vault
+ansible-playbook vault-playbook.yml --vault-password-file /secrets/my-vault
 ```
 We will see later that we could use an other way passing by jenkins.
 
