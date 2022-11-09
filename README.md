@@ -279,3 +279,17 @@ docker run \
 -v jenkins_tutorial:/var/jenkins_home \
 jenkins/jenkins:lts
 ```
+-> **How to get the initial password with the command** ```docker exec```
+
+This command will display the initial password asked when you display the jenkins page on the browser at the URL <docker host IP>:8081
+```sh
+docker exec my-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+For the next installation steps, you can use this tutorial from [Digital Ocean](https://octopus.com/blog/jenkins-docker-install-guide).
+
+### Setup Jenkins via the interface
+
+#### Additionnal plugins to install
+    
+- 
+
