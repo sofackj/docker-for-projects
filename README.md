@@ -16,11 +16,11 @@ ansible/ansible_volumes/init_volume/
 └── init-playbook.yml
 ```
 First, let explain the commands:
-- **docker run** : basic command to run the container
-- **--rm** : it will delete the container after completing the command
-- **-v $(pwd)/ansible/ansible_volumes/init_volume:/ansible_files** : The content of the directory init_volume from the host will be shared with the directory ansible_files from the container
-- **ansible-controller** : the name we set when building the image (see above)
-- **ansible-playbook -i "my-local-node," --connection=local init-playbook.yml** : ansible-playbook command (for more details, check [here](https://docs.ansible.com/ansible/latest/cli/ansible-playbook.html))
+- **```docker run```** : basic command to run the container
+- **```--rm```** : it will delete the container after completing the command
+- **```-v $(pwd)/ansible/ansible_volumes/init_volume:/ansible_files```** : The content of the directory init_volume from the host will be shared with the directory ansible_files from the container
+- **```ansible-controller```** : the name we set when building the image (see above)
+- **```ansible-playbook -i "my-local-node," --connection=local init-playbook.yml```** : ansible-playbook command (for more details, check [here](https://docs.ansible.com/ansible/latest/cli/ansible-playbook.html))
 ```sh
 # In path/to/the/repo/
 # Command to run the container
@@ -154,9 +154,13 @@ cat > ~/.my_secrets/my-vault
 <my-password>
 ```
 - Encryption of the vault.yml file containing the sensitive informations
- First, we will go through an explanation about this command :
-    - **-v ~/.my_secrets:/secrets** : Volume sharing creating a /secrets directory in the container
-    - **ansible-vault encrypt --vault-id /secrets/my-vault inventory/group_vars/all/vault.yml** : Encrypt a file using a file as password storage (for more explanation about ansible-vault, check [here](https://docs.ansible.com/ansible/latest/user_guide/vault.html))
+
+First, we will go through an explanation about this command :
+
+-> **```-v ~/.my_secrets:/secrets```** : Volume sharing creating a /secrets directory in the container
+
+-> **```ansible-vault encrypt --vault-id /secrets/my-vault inventory/group_vars/all/vault.yml```** : Encrypt a file using a file as password storage (for more explanation about ansible-vault, check [here](https://docs.ansible.com/ansible/latest/user_guide/vault.html))
+
 ```sh
 # In path/to/the/repo/
 docker run \
@@ -263,11 +267,11 @@ docker inspect -f '{{ .Mountpoint }}' jenkins_tutorial
 
 -> **Start the Jenkins container**
 
-- **-d** : Run the container in detach mode (No display of the container output)
-- **--restart always** : Always restart unless it was stopped manually
-- **-p 8081:8080** : Link the port 8080 of the container to the port 8081 of the host
-- **-p 50000:50000** : This is something about jenkins agent, but honestly I didn't find any concrete reason
-- **-v jenkins_tutorial:/var/jenkins_home** : Share a volume docker with the container
+- **```-d```** : Run the container in detach mode (No display of the container output)
+- **```--restart always```** : Always restart unless it was stopped manually
+- **```-p 8081:8080```** : Link the port 8080 of the container to the port 8081 of the host
+- **```-p 50000:50000```** : This is something about jenkins agent, but honestly I didn't find any concrete reason
+- **```-v jenkins_tutorial:/var/jenkins_home```** : Share a volume docker with the container
 
 ```sh
 docker run \
