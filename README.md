@@ -295,7 +295,7 @@ For the next installation steps, you can use this tutorial from [Digital Ocean](
 
 #### Additionnal plugins to install
     
-| Plugin | Version | Version |
+| Plugin | Version | Purpose |
 | ------ | ------ | ------ |
 | Ansible plugin | [1.1](https://plugins.jenkins.io/ansible/) | Ansible interaction |
 | Docker plugin | [1.2.10](https://plugins.jenkins.io/ansible/) | Set up docker Cloud and API |
@@ -304,4 +304,14 @@ For the next installation steps, you can use this tutorial from [Digital Ocean](
 | docker-build-step | [2.9](https://plugins.jenkins.io/docker-build-step/#documentation) | <Plugin to try> |
     
 #### Setup the docker host as node
+
+First you need to install jdk-11, check the installation on different distributions : [Ubuntu 18.04](https://www.infoworld.com/article/3514725/installing-oracle-java-se-11-on-ubuntu-18-04.html), [Rocky Linux 8, CentOS 8, RHEL 8](https://computingforgeeks.com/how-to-install-java-11-openjdk-11-on-rhel-8/)
+
+-> **Steps to setting the node**
+
+- Go to **Manage Jenkins** > **Manage Nodes and Clouds** > **New Node**
+
+- Set the name the new node
+
+
 
