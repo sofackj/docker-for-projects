@@ -221,9 +221,59 @@ my-local-node              : ok=3    changed=3    unreachable=0    failed=0    s
 
 ## Docker with Jenkins
 
-### Pull the jenkins container
+### Setup the jenkins container and its interface
+There are already a plenty of tutorials about this kindof setup. Here one from [Digital Ocean](https://octopus.com/blog/jenkins-docker-install-guide)
+
+#### Pull the jenkins container
 To see more details about this image check [here](https://hub.docker.com/r/jenkins/jenkins)
 ```sh
 # Download the docker image from DockerHub
 docker pull jenkins/jenkins:lts
+```
+
+#### Create a persistent volume
+
+-> Create a Docker volume
+```sh
+docker volume create jenkins_tutorial
+```
+
+-> Location of this volume using the command ``` docker inspect ```
+```sh
+docker inspect jenkins_tutorial
+```
+You will get an output like this:
+```sh
+[
+    {
+        "CreatedAt": "2022-11-09T03:46:21-05:00",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/var/lib/docker/volumes/jenkins_tutorial/_data",
+        "Name": "jenkins_tutorial",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+```
+Just to know how to navigate in this JSON-like output, here the command to get only the result we need (ideal for bash scripts or pipeline scripts) :
+```sh
+docker inspect -f '{{ .Mountpoint }}' jenkins_tutorial
+```
+
+-> Start the Jenkins container
+    - **-d** : Run the container in detach mode (No display of the container output)
+    - **--restart always** : Always restart unless it was stopped manually
+    - **-p 8081:8080** : Link the port 8080 of the container to the port 8081 of the host
+    - **-p 50000:50000** : This is something about jenkins agent, but honestly I didn't find any concrete reason
+    - **-v jenkins_tutorial:/var/jenkins_home** : Share a volume docker with the container
+```sh
+docker run \
+-d \
+--restart always \
+--name my-jenkins \
+-p 8081:8080 \
+-p 50000:50000 \
+-v jenkins_tutorial:/var/jenkins_home \
+jenkins/jenkins:lts
 ```
