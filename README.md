@@ -328,9 +328,107 @@ First you need to install jdk-11, check the installation on different distributi
 
 ![launch-node](ressources/jenkins_ui/new-node-launch.png)
 
-For further details check a documentation [here](https://anto.online/code/how-to-create-a-node-agent-in-jenkins/)
+For further details check a documentation [here](https://anto.online/code/how-to-create-a-node-agent-in-jenkins/).
 
 ### Our first scripted pipeline in the Docker node
 
+#### Simple script
 
+- Go to **Dashboard** > **New Item**
+- Create a Pipeline
+![create-pipeline](ressources/pipeline_data/create-pipeline.png)
+- Go to **Configuration** > **Pipeline**
+![](ressources/pipeline_data/blank-script-pipeline.png)
+- Insert the following code in the pipeline script
+```sh
+// Start the job in the chosen node
+// Here we choose to filter by label 'docker'
+node ('docker') {
+    // First step of the pipeline, you can give the name you want
+    stage ('First Step') {
+        //pipeline integrated command
+        echo "Hello World"
+    }
+    // Second step of the pipeline, you can give the name you want
+    stage ('Second Step') {
+        //sh command
+        sh "echo Hello World"
+    }
+}
+```
+-> You can see that a directory was added to the jenkins workspace
+```sh
+~/jenkins-agent/workspace/workspace/
+├── my-first-pipeline
+└── my-first-pipeline@tmp
+```
+For more details about what you can do with scripted pipelines, check a guide [here](https://github.com/sofackj/jenkins-scripted-pipeline.git). It's not complete yet but it's enough for what we have to do.
 
+#### Running the playbook in the container
+```sh
+// Start the job in the chosen node
+// Here we choose to filter by label 'docker'
+node ('docker') {
+    stage ('Clean the worspace'){
+        cleanWs()
+    }
+    // First step of the pipeline, you can give the name you want
+    stage ('First Step') {
+        //pipeline integrated command
+        git (
+            branch: 'main',
+            credentialsId: 'my-github-token',
+            url: 'https://github.com/sofackj/docker-for-projects.git'
+            )
+    }
+    // Second step of the pipeline, you can give the name you want
+    stage ('Second Step') {
+        docker
+        .image('ansible-controller')
+        .inside('-u root'){
+            dir('ansible/ansible_volumes/host_interaction'){
+                sh 'ansible-playbook'
+            }
+        }
+    }
+}
+```
+We encountered few errors :
+```sh
+# Multiples errors
+PermissionError: [Errno 13] Permission denied: b'/.ansible'
+ansible.errors.AnsibleError: Unable to create local directories(/.ansible/tmp): [Errno 13] Permission denied: b'/.ansible'
+Unable to create local directories(/.ansible/tmp): [Errno 13] Permission denied: b'/.ansible'
+```
+**Resolved** : Add this line ```remote_tmp = /tmp/ansible-$USER
+``` in the inventory file *ansible.cfg*
+```sh
+// Start the job in the chosen node
+// Here we choose to filter by label 'docker'
+node ('docker') {
+    stage ('Clean the worspace'){
+        cleanWs()
+    }
+    // First step of the pipeline, you can give the name you want
+    stage ('First Step') {
+        //pipeline integrated command
+        git (
+            branch: 'main',
+            credentialsId: 'my-github-token',
+            url: 'https://github.com/sofackj/docker-for-projects.git'
+            )
+    }
+    // Second step of the pipeline, you can give the name you want
+    stage ('Second Step') {
+        docker
+        .image('ansible-controller')
+        .inside('-u root'){
+            dir('ansible/ansible_volumes/host_interaction'){
+                ansiblePlaybook(
+                    playbook: 'host-int-playbook.yml'
+                )
+            }
+        }
+    }
+}
+```
