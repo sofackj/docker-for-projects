@@ -295,5 +295,13 @@ For the next installation steps, you can use this tutorial from [Digital Ocean](
 
 #### Additionnal plugins to install
     
-- 
+| Plugin | Version | Version |
+| ------ | ------ | ------ |
+| Ansible plugin | [1.1](https://plugins.jenkins.io/ansible/) | Ansible interaction |
+| Docker plugin | [1.2.10](https://plugins.jenkins.io/ansible/) | Set up docker Cloud and API |
+| Docker Pipeline | [528.v7](https://plugins.jenkins.io/docker-workflow/) | Integrate docker objects for pipelines |
+| Locale | [v204.v2](https://plugins.jenkins.io/locale/) | Setup the interface language |
+| docker-build-step | [2.9](https://plugins.jenkins.io/docker-build-step/#documentation) | <Plugin to try> |
+    
+#### Setup the docker host as node
 
