@@ -297,11 +297,12 @@ For the next installation steps, you can use this tutorial from [Digital Ocean](
     
 | Plugin | Version | Purpose |
 | ------ | ------ | ------ |
-| Ansible plugin | [1.1](https://plugins.jenkins.io/ansible/) | Ansible interaction |
-| Docker plugin | [1.2.10](https://plugins.jenkins.io/ansible/) | Set up docker Cloud and API |
-| Docker Pipeline | [528.v7](https://plugins.jenkins.io/docker-workflow/) | Integrate docker objects for pipelines |
-| Locale | [v204.v2](https://plugins.jenkins.io/locale/) | Setup the interface language |
-| docker-build-step | [2.9](https://plugins.jenkins.io/docker-build-step/#documentation) | <Plugin to try> |
+| **Ansible plugin** | [1.1](https://plugins.jenkins.io/ansible/) | Ansible interaction |
+| **Docker plugin** | [1.2.10](https://plugins.jenkins.io/ansible/) | Set up docker Cloud and API |
+| **Docker Pipeline** | [528.v7](https://plugins.jenkins.io/docker-workflow/) | Integrate docker objects for pipelines |
+| **Locale** | [v204.v2](https://plugins.jenkins.io/locale/) | Setup the interface language |
+| **docker-build-step** | [2.9](https://plugins.jenkins.io/docker-build-step/#documentation) | Plugin to try |
+| **Blue Ocean** | [1.25.8](https://plugins.jenkins.io/blueocean) | Better visualization of the pipeline|
     
 #### Setup the docker host as node
 
@@ -311,7 +312,25 @@ First you need to install jdk-11, check the installation on different distributi
 
 - Go to **Manage Jenkins** > **Manage Nodes and Clouds** > **New Node**
 
-- Set the name the new node
+- Name of the new node
+
+![name-node](ressources/jenkins_ui/new-node-name.png)
+
+- Directory where the job will be deployed
+
+![directory-node](ressources/jenkins_ui/new-node-directory.png)
+
+- Labels to help filter the node we need
+
+![labels-node](ressources/jenkins_ui/new-node-label.png)
+
+- Launch type to link the node to jenkins
+
+![launch-node](ressources/jenkins_ui/new-node-launch.png)
+
+For further details check a documentation [here](https://anto.online/code/how-to-create-a-node-agent-in-jenkins/)
+
+### Our first scripted pipeline in the Docker node
 
 
 
