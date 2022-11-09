@@ -400,6 +400,7 @@ PermissionError: [Errno 13] Permission denied: b'/.ansible'
 ansible.errors.AnsibleError: Unable to create local directories(/.ansible/tmp): [Errno 13] Permission denied: b'/.ansible'
 Unable to create local directories(/.ansible/tmp): [Errno 13] Permission denied: b'/.ansible'
 ```
+Thanks to this Stackoverflow post [here](https://stackoverflow.com/questions/49720135/ansible-playbook-permission-denied) 
 **Resolved** : Add this line ```remote_tmp = /tmp/ansible-$USER
 ``` in the inventory file *ansible.cfg*
 ```sh
