@@ -328,9 +328,99 @@ First you need to install jdk-11, check the installation on different distributi
 
 ![launch-node](ressources/jenkins_ui/new-node-launch.png)
 
-For further details check a documentation [here](https://anto.online/code/how-to-create-a-node-agent-in-jenkins/)
+For further details check a documentation [here](https://anto.online/code/how-to-create-a-node-agent-in-jenkins/).
 
 ### Our first scripted pipeline in the Docker node
 
+#### Simple script
 
+- Go to **Dashboard** > **New Item**
+- Create a Pipeline
+![create-pipeline](ressources/pipeline_data/create-pipeline.png)
+- Go to **Configuration** > **Pipeline**
+![](ressources/pipeline_data/blank-script-pipeline.png)
+- Insert the following code in the pipeline script
+```sh
+// Start the job in the chosen node
+// Here we choose to filter by label 'docker'
+node ('docker') {
+    // First step of the pipeline, you can give the name you want
+    stage ('First Step') {
+        //pipeline integrated command
+        echo "Hello World"
+    }
+    // Second step of the pipeline, you can give the name you want
+    stage ('Second Step') {
+        //sh command
+        sh "echo Hello World"
+    }
+}
+```
+-> You can see that a directory was added to the jenkins workspace
+```sh
+~/jenkins-agent/workspace/workspace/
+├── my-first-pipeline
+└── my-first-pipeline@tmp
+```
+For more details about what you can do with scripted pipelines, check a guide [here](https://github.com/sofackj/jenkins-scripted-pipeline.git). It's not complete yet but it's enough for what we have to do.
 
+#### Running the playbook in the container
+
+I encountered **Permissions errors** while executing the pipeline. This issue was resolved, by going inside the container as root user. 
+
+**WARNING** : The best way should be to add a user when building the image and execute all command with this user.
+
+ An other possible resolution Permission errors in ansible container [here](https://stackoverflow.com/questions/49720135/ansible-playbook-permission-denied) 
+
+```sh
+// Start the job in the chosen node
+// Here we choose to filter by label 'docker'
+node ('docker') {
+    // Delete the workspace then rebuild it
+    stage ('Clean the worspace') {
+        // Class to delete the workspace direcory
+        cleanWs()
+    }
+    // Define variables for all the pipeline
+    // Using 'def' in a stage would limit the use of this variable in it
+    stage ('Environment variables') {
+        // Variable for the ansible playbook directory
+        env.ANSIBLE_DIR = "ansible/ansible_volumes/ssh_key_generate"
+        // Variable for the ansible playbook name
+        env.ANSIBLE_PLAYBOOK = "ssh-playbook.yml"
+        // Variable for the git repository
+        env.GIT_REPO = 'https://github.com/sofackj/docker-for-projects.git'
+    }
+    // Import the git repository
+    stage ('Cloning of the repository') {
+        // Git pipeline integrated command
+        git (
+            // Branch of the repository to import
+            branch: 'main',
+            // Credentials for github setup in jenkins (username/token)
+            credentialsId: 'my-github-token',
+            // Url of the repository
+            url: 'https://github.com/sofackj/docker-for-projects.git'
+            )
+    }
+    // STart the ansible playbook in the Ansible container
+    stage ('Launch of the Playbook') {
+        // Docker pipeline integrated command
+        docker
+        // Name of the image to use
+        .image('ansible-controller')
+        // Property to do commands inside tha container
+        // Go inside as root to avoid permission errors
+        .inside('-u root'){
+            // Go to the existing directory (if no directory, it will create one)
+            dir("${ANSIBLE_DIR}"){
+                // ansiblePlaybook invoke via jenkins
+                ansiblePlaybook(
+                    // Path of the playbook but other options can be added
+                    playbook: "${ANSIBLE_PLAYBOOK}"
+                )
+            }
+        }
+    }
+}
+```
