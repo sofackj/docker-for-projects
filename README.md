@@ -424,3 +424,93 @@ node ('docker') {
     }
 }
 ```
+
+#### Jenkins asking password for Ansible-Vault
+
+This is an example to show the use of Ansible-Vault with jenkins without leaking the password within the code. I won't explain all the steps of the process given that this method was explained in one of my tutorials [Ansible-Vault for Jenkins](https://github.com/sofackj/jenkins-scripted-pipeline#ansible-vault-for-jenkins)
+
+Here the structure of our aimed directory :
+```sh
+ansible/ansible_volumes/vault_process/
+├── ansible.cfg
+├── inventory
+│   ├── 00_inventory.yml
+│   ├── group_vars
+│   │   └── all
+│   │       ├── variables.yml
+│   │       └── vault.yml
+│   └── host_vars
+│       ├── my-docker-host.yml
+│       └── my-local-node.yml
+├── secrets
+└── vault-playbook.yml
+```
+Two actions will be executed in the container :
+- Encrypt the ```group_vars/all/vault.yml```
+- Start the ```vault-playbook.yml``` with few variables encrypted
+
+**To Be Clear** : In this case, whatever the password you enter. For your project you have to encrypt your ```vault.yml``` file before its commit to your git remote repository.
+
+```sh
+// Start the job in the chosen node
+// Here we choose to filter by label 'docker'
+node ('docker') {
+    // Delete the workspace then rebuild it
+    stage ('Clean the worspace') {
+        // Class to delete the workspace direcory
+        cleanWs()
+    }
+    // Define variables for all the pipeline
+    // Using 'def' in a stage would limit the use of this variable in it
+    stage ('Environment variables') {
+        // Variable for the ansible playbook directory
+        env.ANSIBLE_DIR = "ansible/ansible_volumes/vault_process"
+        // Variable for the ansible playbook name
+        env.ANSIBLE_PLAYBOOK = "vault-playbook.yml"
+        // Variable for the git repository
+        env.GIT_REPO = 'https://github.com/sofackj/docker-for-projects.git'
+        // Variable generating a sensitive file
+    }
+    // Import the git repository
+    stage ('Cloning of the repository') {
+        // Git pipeline integrated command
+        git (
+            // Branch of the repository to import
+            branch: 'main',
+            // Credentials for github setup in jenkins (username/token)
+            credentialsId: 'my-github-token',
+            // Url of the repository
+            url: 'https://github.com/sofackj/docker-for-projects.git'
+            )
+    }
+    // Start the ansible playbook in the Ansible container
+    stage ('Processus running in the Ansible container') {
+        // Docker pipeline integrated command
+        docker
+        // Name of the image to use
+        .image('ansible-controller')
+        // Property to do commands inside tha container
+        // Go inside as root to avoid permission errors
+        .inside('-u root'){
+            // Go to the existing directory (if no directory, it will create one)
+            dir("${ANSIBLE_DIR}"){
+                // Create a file secrets with password in it
+                writeFile (
+                    file: 'secrets',
+                    text: VAULT
+                )
+                // Encrypt the vault file with the secrets file
+                sh "ansible-vault encrypt inventory/group_vars/all/vault.yml --vault-id secrets"
+                // ansiblePlaybook invoke via jenkins
+                ansiblePlaybook (
+                    // Path of the playbook but other options can be added
+                    playbook: "${ANSIBLE_PLAYBOOK}",
+                    extras: "--vault-pass-file secrets"
+                )
+            }
+        }
+    }
+}
+```
+
+####
