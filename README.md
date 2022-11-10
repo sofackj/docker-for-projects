@@ -365,68 +365,59 @@ node ('docker') {
 For more details about what you can do with scripted pipelines, check a guide [here](https://github.com/sofackj/jenkins-scripted-pipeline.git). It's not complete yet but it's enough for what we have to do.
 
 #### Running the playbook in the container
+
+I encountered **Permissions errors** while executing the pipeline. This issue was resolved, by going inside the container as root user. 
+
+**WARNING** : The best way should be to add a user when building the image and execute all command with this user.
+
+ An other possible resolution Permission errors in ansible container [here](https://stackoverflow.com/questions/49720135/ansible-playbook-permission-denied) 
+
 ```sh
 // Start the job in the chosen node
 // Here we choose to filter by label 'docker'
 node ('docker') {
-    stage ('Clean the worspace'){
+    // Delete the workspace then rebuild it
+    stage ('Clean the worspace') {
+        // Class to delete the workspace direcory
         cleanWs()
     }
-    // First step of the pipeline, you can give the name you want
-    stage ('First Step') {
-        //pipeline integrated command
+    // Define variables for all the pipeline
+    // Using 'def' in a stage would limit the use of this variable in it
+    stage ('Environment variables') {
+        // Variable for the ansible playbook directory
+        env.ANSIBLE_DIR = "ansible/ansible_volumes/ssh_key_generate"
+        // Variable for the ansible playbook name
+        env.ANSIBLE_PLAYBOOK = "ssh-playbook.yml"
+        // Variable for the git repository
+        env.GIT_REPO = 'https://github.com/sofackj/docker-for-projects.git'
+    }
+    // Import the git repository
+    stage ('Cloning of the repository') {
+        // Git pipeline integrated command
         git (
+            // Branch of the repository to import
             branch: 'main',
+            // Credentials for github setup in jenkins (username/token)
             credentialsId: 'my-github-token',
+            // Url of the repository
             url: 'https://github.com/sofackj/docker-for-projects.git'
             )
     }
-    // Second step of the pipeline, you can give the name you want
-    stage ('Second Step') {
+    // STart the ansible playbook in the Ansible container
+    stage ('Launch of the Playbook') {
+        // Docker pipeline integrated command
         docker
+        // Name of the image to use
         .image('ansible-controller')
+        // Property to do commands inside tha container
+        // Go inside as root to avoid permission errors
         .inside('-u root'){
-            dir('ansible/ansible_volumes/host_interaction'){
-                sh 'ansible-playbook'
-            }
-        }
-    }
-}
-```
-We encountered few errors :
-```sh
-# Multiples errors
-PermissionError: [Errno 13] Permission denied: b'/.ansible'
-ansible.errors.AnsibleError: Unable to create local directories(/.ansible/tmp): [Errno 13] Permission denied: b'/.ansible'
-Unable to create local directories(/.ansible/tmp): [Errno 13] Permission denied: b'/.ansible'
-```
-Thanks to this Stackoverflow post [here](https://stackoverflow.com/questions/49720135/ansible-playbook-permission-denied) 
-**Resolved** : Add this line ```remote_tmp = /tmp/ansible-$USER
-``` in the inventory file *ansible.cfg*
-```sh
-// Start the job in the chosen node
-// Here we choose to filter by label 'docker'
-node ('docker') {
-    stage ('Clean the worspace'){
-        cleanWs()
-    }
-    // First step of the pipeline, you can give the name you want
-    stage ('First Step') {
-        //pipeline integrated command
-        git (
-            branch: 'main',
-            credentialsId: 'my-github-token',
-            url: 'https://github.com/sofackj/docker-for-projects.git'
-            )
-    }
-    // Second step of the pipeline, you can give the name you want
-    stage ('Second Step') {
-        docker
-        .image('ansible-controller')
-        .inside('-u root'){
-            dir('ansible/ansible_volumes/host_interaction'){
+            // Go to the existing directory (if no directory, it will create one)
+            dir("${ANSIBLE_DIR}"){
+                // ansiblePlaybook invoke via jenkins
                 ansiblePlaybook(
-                    playbook: 'host-int-playbook.yml'
+                    // Path of the playbook but other options can be added
+                    playbook: "${ANSIBLE_PLAYBOOK}"
                 )
             }
         }
