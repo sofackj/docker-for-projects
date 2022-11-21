@@ -1,6 +1,6 @@
 ---
 my_var: "my-docker-host"
-ansible_host: 192.168.43.208
+ansible_host: 172.17.0.1
 ansible_connection: ssh
 ansible_user: devops
 ansible_password: devops
